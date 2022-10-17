@@ -1,0 +1,25 @@
+﻿body {
+    background-image: url('../Images/v546batch3-mynt-34-badgewatercolor.jpg');
+    height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+h3 {
+    margin-left: 574px;
+}
+.card {
+    margin-bottom: 23px;
+    width: 200px;
+    margin-left: 10px;
+}
+.card-body {
+    text-align: center;
+}
+.row {
+    margin-left: 118px;
+    margin-top: 44px;
+}
+.col-md-4 {
+    margin-right: -150px;
+}

@@ -22,8 +22,8 @@ namespace FirstCloudProject.Controllers
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, ApplicationDbContext context)
         {
             _logger = logger;
-           _webHostEnvironment = webHostEnvironment;
-           _context = context;
+            _webHostEnvironment = webHostEnvironment;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -44,43 +44,43 @@ namespace FirstCloudProject.Controllers
                 {
                     try
                     {
-                    string folder = "Images/";
-                    folder += Guid.NewGuid() + "_" + model.ImageFile.FileName;
-                    model.ImgURl = $"/{folder}";
-                    string serverfolder = Path.Combine(_webHostEnvironment.WebRootPath, folder);
+                        string folder = "Images/";
+                        folder += Guid.NewGuid() + "_" + model.ImageFile.FileName;
+                        model.ImgURl = $"/{folder}";
+                        string serverfolder = Path.Combine(_webHostEnvironment.WebRootPath, folder);
 
-                    //then we move this coverimg to folder in myproject
-                    await model.ImageFile.CopyToAsync(new FileStream(serverfolder, FileMode.Create));
+                        //then we move this coverimg to folder in myproject
+                        await model.ImageFile.CopyToAsync(new FileStream(serverfolder, FileMode.Create));
 
 
-                    var cookie = Request.Cookies[model.Key];
-                    var exitimage = _context.Images.Find(model.Key);
-                    if(cookie != null || exitimage != null)
-                    {
+                        var cookie = Request.Cookies[model.Key];
+                        var exitimage = _context.Images.Find(model.Key);
+                        if (cookie != null || exitimage != null)
+                        {
                             var image = _context.Images.FirstOrDefault(x => x.Key == model.Key);
                             image.ImagePath = model.ImgURl;
-                             _context.Images.Update(image);
+                            _context.Images.Update(image);
                             await _context.SaveChangesAsync();
                             HttpContext.Response.Cookies.Append(model.Key, model.ImgURl);
-                    }
-                    else
-                    {
-                        var imageDb = new Image()
+                        }
+                        else
                         {
-                            Key = model.Key,
-                            ImagePath = model.ImgURl
-                        };
-                        await _context.Images.AddAsync(imageDb);
-                        await _context.SaveChangesAsync();
-                        HttpContext.Response.Cookies.Append(model.Key, model.ImgURl);
-                    }
-                    
+                            var imageDb = new Image()
+                            {
+                                Key = model.Key,
+                                ImagePath = model.ImgURl
+                            };
+                            await _context.Images.AddAsync(imageDb);
+                            await _context.SaveChangesAsync();
+                            HttpContext.Response.Cookies.Append(model.Key, model.ImgURl);
+                        }
+
                         //var b = (HttpContext.Request.Cookies[model.Key]).ToLower();
                         //var a=HttpContext.Request.Cookies[model.Key];
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        
+
                     }
                 }
             }
@@ -110,9 +110,15 @@ namespace FirstCloudProject.Controllers
         [HttpGet]
         public IActionResult ShowAllKeys()
         {
-            var keys = _context.Images.Select(x=>x.Key).ToList();
+            var keys = _context.Images.Select(x => x.Key).ToList();
             return View(keys);
         }
+
+        public IActionResult ShowAllBeforTenMenite()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -120,3 +126,4 @@ namespace FirstCloudProject.Controllers
         }
     }
 }
+
