@@ -1,0 +1,20 @@
+﻿@model List<Image>
+    <div class="py-5 bg-light">
+    <div class="container">
+
+        <h3 class="h3"> All Images</h3>
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <img src="@item.ImagePath" class="img-thumbnail" />
+                        <div class="card-body">
+                            <h3 class="card-title">@item.Key</h3>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        </div>
+</div>
