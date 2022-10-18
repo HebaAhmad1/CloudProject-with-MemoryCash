@@ -52,16 +52,17 @@ namespace FirstCloudProject.Controllers
                         //then we move this coverimg to folder in myproject
                         await model.ImageFile.CopyToAsync(new FileStream(serverfolder, FileMode.Create));
 
-
                         var cookie = Request.Cookies[model.Key];
                         var exitimage = _context.Images.Find(model.Key);
                         if (cookie != null || exitimage != null)
                         {
+                            var list = new List<String>() {model.ImgURl, DateTime.Now.ToString() };
+                            var value = String.Join(",", list);
                             var image = _context.Images.FirstOrDefault(x => x.Key == model.Key);
                             image.ImagePath = model.ImgURl;
                             _context.Images.Update(image);
                             await _context.SaveChangesAsync();
-                            HttpContext.Response.Cookies.Append(model.Key, model.ImgURl);
+                            HttpContext.Response.Cookies.Append(model.Key, value);
                         }
                         else
                         {
@@ -72,11 +73,10 @@ namespace FirstCloudProject.Controllers
                             };
                             await _context.Images.AddAsync(imageDb);
                             await _context.SaveChangesAsync();
-                            HttpContext.Response.Cookies.Append(model.Key, model.ImgURl);
+                            var list = new List<String>() { model.ImgURl, DateTime.Now.ToString() };
+                            var value = String.Join(",", list);
+                            HttpContext.Response.Cookies.Append(model.Key, value);
                         }
-
-                        //var b = (HttpContext.Request.Cookies[model.Key]).ToLower();
-                        //var a=HttpContext.Request.Cookies[model.Key];
                     }
                     catch (Exception ex)
                     {
@@ -116,7 +116,26 @@ namespace FirstCloudProject.Controllers
 
         public IActionResult ShowAllBeforTenMenite()
         {
-            return View();
+            var keys = HttpContext.Request.Cookies.Keys.ToList();
+            var date = DateTime.Now;
+            var result = new List<DateWithImage>();
+            foreach (var key in keys)
+            {
+                var value=HttpContext.Request.Cookies[key].Split(',').ToList();
+                if(value.Count > 1)
+                {
+                    var isnew = (Convert.ToDateTime(value[1]) - date).TotalMinutes <= 10;
+                    if (isnew)
+                    {
+                        result.Add(new DateWithImage()
+                        {
+                            Key= key,
+                            Date= Convert.ToDateTime(value[1])
+                        });
+                    }
+                }
+            }
+            return View(result);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
