@@ -124,7 +124,9 @@ namespace FirstCloudProject.Controllers
                 var value=HttpContext.Request.Cookies[key].Split(',').ToList();
                 if(value.Count > 1)
                 {
-                    var isnew = (Convert.ToDateTime(value[1]) - date).TotalMinutes <= 10;
+                    var a = date - Convert.ToDateTime(value[1]);
+                    var e = a.TotalMinutes;
+                    var isnew = (date - Convert.ToDateTime(value[1])).TotalMinutes <= 10;
                     if (isnew)
                     {
                         result.Add(new DateWithImage()
@@ -137,8 +139,26 @@ namespace FirstCloudProject.Controllers
             }
             return View(result);
         }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult ShowAllKeysBeforTenMeniteFromDb()
+        {
+            var date = DateTime.Now;
+            var images = _context.Images.ToList();
+            var result = new List<DateWithImage>();
+            foreach (var image in images)
+            {
+                var isNew = (date - image.LastModifiedDate ).TotalMinutes <= 10;
+                if (isNew)
+                {
+                    result.Add(new DateWithImage()
+                    {
+                        Key = image.Key,
+                        Date = image.LastModifiedDate
+                    });
+                }
+            }
+            return View(result);
+        }
+            [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

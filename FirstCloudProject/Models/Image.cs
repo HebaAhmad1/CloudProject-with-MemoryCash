@@ -14,6 +14,7 @@ namespace FirstCloudProject.Models
         public string Key { get; set; }
         [Required]
         public string ImagePath { get; set; }
-    
+        public DateTime LastModifiedDate { get; set; } = DateTime.Now;
+
     }
 }

@@ -1,0 +1,21 @@
+﻿@model List<FirstCloudProject.Models.ViewModels.DateWithImage>;
+
+<link href="~/css/showAllKey.css" rel="stylesheet" />
+<div>
+    <h3 class="h3"> All Keys Added before ten minutes</h3>
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <div class="card" style="width: 300px; text-align: center;">
+                    <div class="card-body">
+                        @item.Key
+                    </div>
+                    <div class="card-footer">
+                        @item.Date
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
