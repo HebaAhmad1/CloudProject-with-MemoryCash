@@ -26,8 +26,8 @@ namespace FirstCloudProject.Controllers
         // ObjectCache _memoryCache = MemoryCache.Default;
         private readonly IMemoryCache _memoryCache;
 
-        private int hit=0;
-        private int miss=0;
+         int hit;
+         int miss;
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, ApplicationDbContext context, IMemoryCache memoryCache)
         {
@@ -207,7 +207,7 @@ namespace FirstCloudProject.Controllers
             var items = GetListOfKeys();
             var item = new MemoryCacheSettings()
             {
-                Capacity=5,
+                Capacity=30,
                 Hit=hit,
                 Miss=miss,
                 TotalItemsNum=items.Count,
@@ -236,10 +236,12 @@ namespace FirstCloudProject.Controllers
            foreach (var key in keys)
             {
                 var value = _memoryCache.Get<CacheValue>(key: key);
-                var img = "E:\\CloudProjects\\FirstProject\\FirstCloudProject\\FirstCloudProject\\wwwroot" + value.ImagePath;
+                var img = "F:\\cloud\\CloudProject-with-MemoryCash\\FirstCloudProject\\wwwroot" + value.ImagePath;
                 FileInfo fileInfo = new FileInfo(img);
-                long fileSizeMB = fileInfo.Length / (1024 * 1024);
+                long fileSizekB = fileInfo.Length / (1000);
+                long fileSizeMB = fileSizekB / (1024);
                 size += fileSizeMB;
+              
             }
             return size;
         }
