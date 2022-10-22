@@ -13,5 +13,7 @@ namespace FirstCloudProject.Models
         {
         }
         public DbSet<Image> Images { get; set; }
+        public DbSet<MemoryCacheSettings> MemoryCacheSettings { get; set; }
+        
     }
 }

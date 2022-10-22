@@ -3,12 +3,16 @@ using FirstCloudProject.Models.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Caching;
 using System.Threading.Tasks;
 
 namespace FirstCloudProject.Controllers
@@ -18,17 +22,24 @@ namespace FirstCloudProject.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ApplicationDbContext _context;
+        
+        // ObjectCache _memoryCache = MemoryCache.Default;
+        private readonly IMemoryCache _memoryCache;
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, ApplicationDbContext context)
+        private int hit=0;
+        private int miss=0;
+
+        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, ApplicationDbContext context, IMemoryCache memoryCache)
         {
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _context = context;
+            _memoryCache = memoryCache;
         }
 
         public IActionResult Index()
         {
-            return View();
+             return View();
         }
         [HttpGet]
         public IActionResult AddImage()
@@ -48,21 +59,29 @@ namespace FirstCloudProject.Controllers
                         folder += Guid.NewGuid() + "_" + model.ImageFile.FileName;
                         model.ImgURl = $"/{folder}";
                         string serverfolder = Path.Combine(_webHostEnvironment.WebRootPath, folder);
-
                         //then we move this coverimg to folder in myproject
                         await model.ImageFile.CopyToAsync(new FileStream(serverfolder, FileMode.Create));
 
-                        var cookie = Request.Cookies[model.Key];
+                        var isExists = _memoryCache.Get(model.Key);
                         var exitimage = _context.Images.Find(model.Key);
-                        if (cookie != null || exitimage != null)
+                        if (isExists != null || exitimage != null)
                         {
-                            var list = new List<String>() {model.ImgURl, DateTime.Now.ToString() };
-                            var value = String.Join(",", list);
                             var image = _context.Images.FirstOrDefault(x => x.Key == model.Key);
                             image.ImagePath = model.ImgURl;
+                            image.LastModifiedDate = DateTime.Now;
                             _context.Images.Update(image);
                             await _context.SaveChangesAsync();
-                            HttpContext.Response.Cookies.Append(model.Key, value);
+                            miss++;
+                            var value = new CacheValue()
+                            {
+                                ImagePath = model.ImgURl,
+                                LasModifiedDate=DateTime.Now
+                            };
+                            _memoryCache.Set(model.Key, value);
+                            hit++;
+                            //var list = new List<String>() {model.ImgURl, DateTime.Now.ToString() };
+                            //var value = String.Join(",", list);
+                            //HttpContext.Response.Cookies.Append(model.Key, value);
                         }
                         else
                         {
@@ -73,9 +92,21 @@ namespace FirstCloudProject.Controllers
                             };
                             await _context.Images.AddAsync(imageDb);
                             await _context.SaveChangesAsync();
-                            var list = new List<String>() { model.ImgURl, DateTime.Now.ToString() };
-                            var value = String.Join(",", list);
-                            HttpContext.Response.Cookies.Append(model.Key, value);
+                            miss++;
+                            var value = new CacheValue()
+                            {
+                                ImagePath = model.ImgURl,
+                                LasModifiedDate = DateTime.Now
+                            };
+                            var cacheItemPolicy = new CacheItemPolicy
+                            {
+                                AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60.0)
+                            };
+                            _memoryCache.Set(model.Key, value);
+                            hit++;
+                            //var list = new List<String>() { model.ImgURl, DateTime.Now.ToString() };
+                            //var value = String.Join(",", list);
+                            //HttpContext.Response.Cookies.Append(model.Key, value);
                         }
                     }
                     catch (Exception ex)
@@ -94,12 +125,26 @@ namespace FirstCloudProject.Controllers
         [HttpPost]
         public async Task<IActionResult> ShowImage(string key)
         {
-            var imagePath = _context.Images.FirstOrDefault(x => x.Key == key);
-            if (imagePath != null)
+            CacheValue ImgwithDataObj;
+            //Get it From Meomry Cache
+            ImgwithDataObj = _memoryCache.Get<CacheValue>(key: key);
+
+            if (ImgwithDataObj is null)
             {
-                return Json(imagePath.ImagePath);
+                miss++;
+                var ImgwithDateFromDB = _context.Images.FirstOrDefault(x => x.Key == key);
+                if (ImgwithDateFromDB == null)
+                    return Json(null);
+                ImgwithDataObj = new CacheValue
+                {
+                    ImagePath = ImgwithDateFromDB.ImagePath,
+                    LasModifiedDate = DateTime.Now
+                };
+                _memoryCache.Set(key: key, ImgwithDataObj);
             }
-            return Json(null);
+            else
+                hit++;
+            return Json(ImgwithDataObj.ImagePath);
         }
         [HttpGet]
         public IActionResult ShowAllImages()
@@ -110,38 +155,37 @@ namespace FirstCloudProject.Controllers
         [HttpGet]
         public IActionResult ShowAllKeys()
         {
+            miss++;
             var keys = _context.Images.Select(x => x.Key).ToList();
             return View(keys);
         }
 
         public IActionResult ShowAllBeforTenMenite()
         {
-            var keys = HttpContext.Request.Cookies.Keys.ToList();
+            var items = GetListOfKeys();
             var date = DateTime.Now;
             var result = new List<DateWithImage>();
-            foreach (var key in keys)
+            foreach (var key in items)
             {
-                var value=HttpContext.Request.Cookies[key].Split(',').ToList();
-                if(value.Count > 1)
-                {
-                    var a = date - Convert.ToDateTime(value[1]);
-                    var e = a.TotalMinutes;
-                    var isnew = (date - Convert.ToDateTime(value[1])).TotalMinutes <= 10;
-                    if (isnew)
+                var value = _memoryCache.Get<CacheValue>(key: key);
+                hit++;
+                    var isBefore10Min = (date - value.LasModifiedDate).TotalMinutes <= 10;
+                    if (isBefore10Min)
                     {
                         result.Add(new DateWithImage()
                         {
                             Key= key,
-                            Date= Convert.ToDateTime(value[1])
+                            Date= value.LasModifiedDate
                         });
                     }
-                }
+                //}
             }
             return View(result);
         }
         public IActionResult ShowAllKeysBeforTenMeniteFromDb()
         {
-            var date = DateTime.Now;
+        
+             var date = DateTime.Now;
             var images = _context.Images.ToList();
             var result = new List<DateWithImage>();
             foreach (var image in images)
@@ -158,7 +202,48 @@ namespace FirstCloudProject.Controllers
             }
             return View(result);
         }
-            [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult SettingsOfMemoryCache()
+        {
+            var items = GetListOfKeys();
+            var item = new MemoryCacheSettings()
+            {
+                Capacity=5,
+                Hit=hit,
+                Miss=miss,
+                TotalItemsNum=items.Count,
+                TotalSizeOfItems= GetApproximateSize(),
+            };
+            return View();
+        }
+        public List<string> GetListOfKeys()
+        {
+            var field = typeof(Microsoft.Extensions.Caching.Memory.MemoryCache).GetProperty("EntriesCollection", BindingFlags.NonPublic | BindingFlags.Instance);
+            var collection = field.GetValue(_memoryCache) as ICollection;
+            var items = new List<string>();
+            if (collection != null)
+                foreach (var item in collection)
+                {
+                    var methodInfo = item.GetType().GetProperty("Key");
+                    var val = methodInfo.GetValue(item);
+                    items.Add(val.ToString());
+                }
+            return items;
+        }
+        public long GetApproximateSize()
+        {
+            var keys = GetListOfKeys();
+            var size =(long) 0.0;
+           foreach (var key in keys)
+            {
+                var value = _memoryCache.Get<CacheValue>(key: key);
+                var img = "E:\\CloudProjects\\FirstProject\\FirstCloudProject\\FirstCloudProject\\wwwroot" + value.ImagePath;
+                FileInfo fileInfo = new FileInfo(img);
+                long fileSizeMB = fileInfo.Length / (1024 * 1024);
+                size += fileSizeMB;
+            }
+            return size;
+        }
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
