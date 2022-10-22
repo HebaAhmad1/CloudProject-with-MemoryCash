@@ -1,5 +1,41 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model MemoryCacheSettings
+    <link href="~/css/showAllKey.css" rel="stylesheet" />
+    <div style="text-align:center">
+        <br />
+
+        <h3 style="margin: 0px;">Setting Of Memory Cache</h3>
+        </br>
+        <div style="margin-left: 420px;">
+            <div class="row">
+                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Capacity</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.Capacity">
+                </div>
+            </div>
+            <div class=" row">
+                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Hit</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.Hit">
+                </div>
+            </div>
+            <div class=" row">
+                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Miss</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.Miss">
+                </div>
+            </div>
+            <div class=" row">
+                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Total Items</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.TotalItemsNum">
+                </div>
+            </div>
+            <div class=" row">
+                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Total Size Of Items</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.TotalSizeOfItems">
+                </div>
+            </div>
+        </div>
+    </div>
+    

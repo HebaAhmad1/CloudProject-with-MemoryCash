@@ -26,8 +26,8 @@ namespace FirstCloudProject.Controllers
         // ObjectCache _memoryCache = MemoryCache.Default;
         private readonly IMemoryCache _memoryCache;
 
-         int hit;
-         int miss;
+         private static int hit;
+         private static int miss;
 
         public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, ApplicationDbContext context, IMemoryCache memoryCache)
         {
@@ -39,7 +39,9 @@ namespace FirstCloudProject.Controllers
 
         public IActionResult Index()
         {
-             return View();
+            _context.MemoryCacheSettings.RemoveRange(_context.MemoryCacheSettings.ToList());
+            _context.SaveChanges();
+            return View();
         }
         [HttpGet]
         public IActionResult AddImage()
@@ -71,17 +73,12 @@ namespace FirstCloudProject.Controllers
                             image.LastModifiedDate = DateTime.Now;
                             _context.Images.Update(image);
                             await _context.SaveChangesAsync();
-                            miss++;
                             var value = new CacheValue()
                             {
                                 ImagePath = model.ImgURl,
                                 LasModifiedDate=DateTime.Now
                             };
                             _memoryCache.Set(model.Key, value);
-                            hit++;
-                            //var list = new List<String>() {model.ImgURl, DateTime.Now.ToString() };
-                            //var value = String.Join(",", list);
-                            //HttpContext.Response.Cookies.Append(model.Key, value);
                         }
                         else
                         {
@@ -92,7 +89,6 @@ namespace FirstCloudProject.Controllers
                             };
                             await _context.Images.AddAsync(imageDb);
                             await _context.SaveChangesAsync();
-                            miss++;
                             var value = new CacheValue()
                             {
                                 ImagePath = model.ImgURl,
@@ -103,10 +99,6 @@ namespace FirstCloudProject.Controllers
                                 AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60.0)
                             };
                             _memoryCache.Set(model.Key, value);
-                            hit++;
-                            //var list = new List<String>() { model.ImgURl, DateTime.Now.ToString() };
-                            //var value = String.Join(",", list);
-                            //HttpContext.Response.Cookies.Append(model.Key, value);
                         }
                     }
                     catch (Exception ex)
@@ -178,14 +170,12 @@ namespace FirstCloudProject.Controllers
                             Date= value.LasModifiedDate
                         });
                     }
-                //}
             }
             return View(result);
         }
         public IActionResult ShowAllKeysBeforTenMeniteFromDb()
         {
-        
-             var date = DateTime.Now;
+            var date = DateTime.Now;
             var images = _context.Images.ToList();
             var result = new List<DateWithImage>();
             foreach (var image in images)
@@ -204,6 +194,8 @@ namespace FirstCloudProject.Controllers
         }
         public IActionResult SettingsOfMemoryCache()
         {
+            _context.MemoryCacheSettings.RemoveRange(_context.MemoryCacheSettings.ToList());
+            _context.SaveChanges();
             var items = GetListOfKeys();
             var item = new MemoryCacheSettings()
             {
@@ -212,8 +204,11 @@ namespace FirstCloudProject.Controllers
                 Miss=miss,
                 TotalItemsNum=items.Count,
                 TotalSizeOfItems= GetApproximateSize(),
+                NumberOfRequests=hit+miss
             };
-            return View();
+            _context.MemoryCacheSettings.Add(item);
+            _context.SaveChanges();
+            return View(item);
         }
         public List<string> GetListOfKeys()
         {
@@ -236,12 +231,11 @@ namespace FirstCloudProject.Controllers
            foreach (var key in keys)
             {
                 var value = _memoryCache.Get<CacheValue>(key: key);
-                var img = "F:\\cloud\\CloudProject-with-MemoryCash\\FirstCloudProject\\wwwroot" + value.ImagePath;
+                var img = "E:\\CloudProjects\\FirstProject\\FirstCloudProject\\FirstCloudProject\\wwwroot" + value.ImagePath;
                 FileInfo fileInfo = new FileInfo(img);
                 long fileSizekB = fileInfo.Length / (1000);
                 long fileSizeMB = fileSizekB / (1024);
                 size += fileSizeMB;
-              
             }
             return size;
         }

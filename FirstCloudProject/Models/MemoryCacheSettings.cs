@@ -13,5 +13,6 @@ namespace FirstCloudProject.Models
         public int Miss { get; set; }
         public long TotalSizeOfItems { get; set; }
         public int TotalItemsNum { get; set; }
+        public int NumberOfRequests { get; set; }
     }
 }
