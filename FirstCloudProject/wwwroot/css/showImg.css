@@ -11,7 +11,7 @@ input {
     border-radius: 25px;
     border: none;
     padding-left: 18px;
-    margin-top: 80px;
+    margin-top: 106px;
     font-size: 15px;
     margin-left: 640px;
 }
@@ -36,4 +36,11 @@ button {
 #img {
     width: 400px;
     height: 300px;
+}
+.jsonClass {
+    display: block;
+    width: 408px;
+    margin-left: 635px;
+    margin-top: 21px;
+    position: absolute;
 }

@@ -3,37 +3,57 @@
     ViewData["Title"] = "AddImage";
 }
 
-    <div class="container">
-        <h4>Add Key And Img</h4>
-        <hr style="width: 36%; margin-left: 5px; " />
-        <div class="row">
-            <div class="col-md-4">
-                <form method="post" asp-action="AddImage" asp-controller="Home" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group">
-                        <label asp-for="Key" class="control-label" style=" font-size: 20px; font-weight: 500;"></label>
-                        <input asp-for="Key" class="form-control" style="width: 400px;" />
-                        <span asp-validation-for="Key" class="text-danger"></span>
+<div class="container">
+    @if (ViewBag.Action == "Update")
+{
+
+    <div class="alert alert-warning alert-dismissible fade show" role="alert" style=" width: 468px; margin-top: 55px; position: absolute;">
+        <strong>success!</strong> Key Updated successfuly At Meomry Cache :)
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+}
+    @if (ViewBag.Action == "Add")
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style=" width: 365px; margin-top: 55px; position: absolute;">
+        <strong>success!</strong> key Added successfuly :)
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+    <h4>Add Key And Img</h4>
+    <hr style="width: 36%; margin-left: 5px; " />
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post" asp-action="AddImage" asp-controller="Home" enctype="multipart/form-data" style="margin-top: 52px;">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Key" class="control-label" style=" font-size: 20px; font-weight: 500;"></label>
+                    <input asp-for="Key" class="form-control" style="width: 400px;" />
+                    <span asp-validation-for="Key" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ImageFile" style=" font-size: 20px; font-weight: 500;"></label>
+                    <div class="custom-file" style="width: 400px;">
+                        <input asp-for="ImageFile" class="custom-file-input" id="inputGroupFile03">
+                        <label class="custom-file-label" for="customFile">Choose file</label>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="ImageFile" style=" font-size: 20px; font-weight: 500;"></label>
-                        <div class="custom-file" style="width: 400px;">
-                            <input asp-for="ImageFile" class="custom-file-input" id="inputGroupFile03">
-                            <label class="custom-file-label" for="customFile">Choose file</label>
-                        </div>
-                        <span asp-validation-for="ImageFile" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Add" class="btn btn-primary"
-                               style=" width: 100px; margin-top: 20px;" />
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-8">
-                <img src="~/img/login.svg" class="img-fluid" style=" margin-top: -140px; margin-left: 200px;" />
-            </div>
+                    <span asp-validation-for="ImageFile" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Add" class="btn btn-primary"
+                           style=" width: 100px; margin-top: 20px;" />
+                </div>
+            </form>
+        </div>
+        <div class="col-md-8">
+            <img src="~/img/login.svg" class="img-fluid" style=" margin-top: -140px; margin-left: 200px;" />
         </div>
     </div>
+</div>
     @section Scripts {
         @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     }

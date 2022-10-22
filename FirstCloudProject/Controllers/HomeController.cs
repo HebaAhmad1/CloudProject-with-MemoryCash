@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FirstCloudProject.Controllers
@@ -79,6 +80,7 @@ namespace FirstCloudProject.Controllers
                                 LasModifiedDate=DateTime.Now
                             };
                             _memoryCache.Set(model.Key, value);
+                            ViewBag.Action = "Update";
                         }
                         else
                         {
@@ -99,6 +101,8 @@ namespace FirstCloudProject.Controllers
                                 AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(60.0)
                             };
                             _memoryCache.Set(model.Key, value);
+                   
+                            ViewBag.Action = "Add";
                         }
                     }
                     catch (Exception ex)
@@ -117,26 +121,46 @@ namespace FirstCloudProject.Controllers
         [HttpPost]
         public async Task<IActionResult> ShowImage(string key)
         {
-            CacheValue ImgwithDataObj;
-            //Get it From Meomry Cache
-            ImgwithDataObj = _memoryCache.Get<CacheValue>(key: key);
-
-            if (ImgwithDataObj is null)
+            try
             {
-                miss++;
-                var ImgwithDateFromDB = _context.Images.FirstOrDefault(x => x.Key == key);
-                if (ImgwithDateFromDB == null)
-                    return Json(null);
-                ImgwithDataObj = new CacheValue
+                CacheValue ImgwithDataObj;
+                //Get it From Meomry Cache
+                ImgwithDataObj = _memoryCache.Get<CacheValue>(key: key);
+
+                if (ImgwithDataObj is null)
                 {
-                    ImagePath = ImgwithDateFromDB.ImagePath,
-                    LasModifiedDate = DateTime.Now
-                };
-                _memoryCache.Set(key: key, ImgwithDataObj);
+                    miss++;
+                    ViewBag.Action = "Add";
+                    var ImgwithDateFromDB = _context.Images.FirstOrDefault(x => x.Key == key);
+                    if (ImgwithDateFromDB == null)
+                        return Json(null);
+                    ImgwithDataObj = new CacheValue
+                    {
+                        ImagePath = ImgwithDateFromDB.ImagePath,
+                        LasModifiedDate = DateTime.Now
+                    };
+                    _memoryCache.Set(key: key, ImgwithDataObj);
+                }
+                else
+                {
+                    hit++;
+                    ViewBag.Action = "Update";
+                }
+                var a = ImgwithDataObj.ImagePath;
+                var b = ViewBag.Action;
+
+                var c = new DesrlizingObject { Path =a , Action =b };
+                return Ok(c);
+
+                
             }
-            else
-                hit++;
-            return Json(ImgwithDataObj.ImagePath);
+            catch (Exception)
+            {
+
+                throw;
+            }
+        
+
         }
         [HttpGet]
         public IActionResult ShowAllImages()
