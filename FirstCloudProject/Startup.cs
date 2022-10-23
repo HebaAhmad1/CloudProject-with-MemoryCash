@@ -1,3 +1,4 @@
+using FirstCloudProject.Controllers;
 using FirstCloudProject.Models;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
@@ -31,10 +32,8 @@ namespace FirstCloudProject
                options.UseSqlServer(
                    Configuration.GetConnectionString("DefaultConnection"), sqlServerOptions => sqlServerOptions.CommandTimeout(60)));
             services.AddMemoryCache(); 
-            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddControllersWithViews();
-            services.AddHangfireServer();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,10 +54,7 @@ namespace FirstCloudProject
 
             app.UseRouting();
 
-           // RecurringJob.AddOrUpdate<MessageService>(x => x.Send(), "*/5 * * * * *");
-
             app.UseAuthorization();
-            app.UseHangfireDashboard("/dashboard");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

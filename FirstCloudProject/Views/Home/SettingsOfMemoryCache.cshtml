@@ -1,41 +1,42 @@
 ﻿@model MemoryCacheSettings
-    <link href="~/css/showAllKey.css" rel="stylesheet" />
-    <div style="text-align:center">
-        <br />
 
-        <h3 style="margin: 0px;">Setting Of Memory Cache</h3>
-        </br>
-        <div style="margin-left: 420px;">
-            <div class="row">
-                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Capacity</label>
-                <div class="col-sm-10">
-                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.Capacity">
-                </div>
-            </div>
-            <div class=" row">
-                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Hit</label>
-                <div class="col-sm-10">
-                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.Hit">
-                </div>
-            </div>
-            <div class=" row">
-                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Miss</label>
-                <div class="col-sm-10">
-                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.Miss">
-                </div>
-            </div>
-            <div class=" row">
-                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Total Items</label>
-                <div class="col-sm-10">
-                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.TotalItemsNum">
-                </div>
-            </div>
-            <div class=" row">
-                <label for="staticEmail" class="col-sm-2 col-form-label font-weight-bold">Total Size Of Items</label>
-                <div class="col-sm-10">
-                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@Model.TotalSizeOfItems">
-                </div>
-            </div>
-        </div>
-    </div>
-    
+<div style="text-align:center">
+    <br />
+
+    <h3 style="margin: 0px;">Setting Of Memory Cache</h3>
+    </br>
+</div>
+
+<table class="table table-striped" style="margin-left: 353px; margin-top: 28px; width: 50%; ">
+    <thead>
+        <tr>
+            <th scope="col">Proprity</th>
+            <th scope="col">Value</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>Capacity</td>
+            <td>@Model.Capacity</td>
+        </tr>
+        <tr>
+            <td>Hit</td>
+            <td>@Model.Hit</td>
+        </tr>
+        <tr>
+            <td>Miss</td>
+            <td>@Model.Miss</td>
+        </tr>
+        <tr>
+            <td>Total Items</td>
+            <td>@Model.TotalItemsNum</td>
+        </tr>
+        <tr>
+            <td>Total Size Of Items</td>
+            <td>@Model.TotalSizeOfItems</td>
+        </tr>
+
+    </tbody>
+</table>

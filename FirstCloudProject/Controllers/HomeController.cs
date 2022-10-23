@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
@@ -23,28 +24,27 @@ namespace FirstCloudProject.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ApplicationDbContext _context;
-        
-        // ObjectCache _memoryCache = MemoryCache.Default;
         private readonly IMemoryCache _memoryCache;
+        private static int hit;
+        private static int miss;
 
-         private static int hit;
-         private static int miss;
-
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment, ApplicationDbContext context, IMemoryCache memoryCache)
+        public HomeController(ApplicationDbContext context, IMemoryCache memoryCache, IWebHostEnvironment webHostEnvironment)
         {
-            _logger = logger;
-            _webHostEnvironment = webHostEnvironment;
             _context = context;
             _memoryCache = memoryCache;
+            _webHostEnvironment = webHostEnvironment;
         }
+
 
         public IActionResult Index()
         {
-            _context.MemoryCacheSettings.RemoveRange(_context.MemoryCacheSettings.ToList());
-            _context.SaveChanges();
             return View();
         }
-        [HttpGet]
+        /// <summary>
+        /// ///Add Image to db & memory cache :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
+         [HttpGet]
         public IActionResult AddImage()
         {
             return View();
@@ -113,6 +113,10 @@ namespace FirstCloudProject.Controllers
             }
             return View();
         }
+        /// <summary>
+        /// ///Show Image by entering key from cache or db :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
         [HttpGet]
         public IActionResult ShowImage()
         {
@@ -162,12 +166,20 @@ namespace FirstCloudProject.Controllers
         
 
         }
+        /// <summary>
+        /// ///Show all images from db :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
         [HttpGet]
         public IActionResult ShowAllImages()
         {
             var models = _context.Images.ToList();
             return View(models);
         }
+        /// <summary>
+        /// ///Show all keys from db :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
         [HttpGet]
         public IActionResult ShowAllKeys()
         {
@@ -175,7 +187,10 @@ namespace FirstCloudProject.Controllers
             var keys = _context.Images.Select(x => x.Key).ToList();
             return View(keys);
         }
-
+        /// <summary>
+        /// ///Show keys from cache which are added passed ten minutes :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
         public IActionResult ShowAllBeforTenMenite()
         {
             var items = GetListOfKeys();
@@ -185,18 +200,22 @@ namespace FirstCloudProject.Controllers
             {
                 var value = _memoryCache.Get<CacheValue>(key: key);
                 hit++;
-                    var isBefore10Min = (date - value.LasModifiedDate).TotalMinutes <= 10;
-                    if (isBefore10Min)
-                    {
-                        result.Add(new DateWithImage()
-                        {
-                            Key= key,
-                            Date= value.LasModifiedDate
-                        });
-                    }
+                var isBefore10Min = (date - value.LasModifiedDate).TotalMinutes <= 10;
+                if (isBefore10Min)
+                {
+                   result.Add(new DateWithImage()
+                   {
+                       Key= key,
+                       Date= value.LasModifiedDate
+                   });
+                }
             }
             return View(result);
         }
+        /// <summary>
+        /// ///Show keys from db which are added passed ten minutes :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
         public IActionResult ShowAllKeysBeforTenMeniteFromDb()
         {
             var date = DateTime.Now;
@@ -216,24 +235,29 @@ namespace FirstCloudProject.Controllers
             }
             return View(result);
         }
-        public IActionResult SettingsOfMemoryCache()
+        /// <summary>
+        /// ///Settings of memory cache :)
+        /// </summary>
+        /// <returns></returns>**************************************************************
+        public IActionResult SettingsOfMemoryCache(bool hang)
         {
-            _context.MemoryCacheSettings.RemoveRange(_context.MemoryCacheSettings.ToList());
-            _context.SaveChanges();
-            var items = GetListOfKeys();
-            var item = new MemoryCacheSettings()
-            {
-                Capacity=30,
-                Hit=hit,
-                Miss=miss,
-                TotalItemsNum=items.Count,
-                TotalSizeOfItems= GetApproximateSize(),
-                NumberOfRequests=hit+miss
-            };
-            _context.MemoryCacheSettings.Add(item);
-            _context.SaveChanges();
-            return View(item);
+                _context.MemoryCacheSettings.RemoveRange(_context.MemoryCacheSettings.ToList());
+                _context.SaveChanges();
+                var items = GetListOfKeys();
+                var item = new MemoryCacheSettings()
+                {
+                    Capacity = 30,
+                    Hit = hit,
+                    Miss = miss,
+                    TotalItemsNum = items.Count,
+                    TotalSizeOfItems = GetApproximateSize(),
+                    NumberOfRequests = hit + miss
+                };
+                _context.MemoryCacheSettings.Add(item);
+                _context.SaveChanges();
+                return View(item);        
         }
+
         public List<string> GetListOfKeys()
         {
             var field = typeof(Microsoft.Extensions.Caching.Memory.MemoryCache).GetProperty("EntriesCollection", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -252,7 +276,7 @@ namespace FirstCloudProject.Controllers
         {
             var keys = GetListOfKeys();
             var size =(long) 0.0;
-           foreach (var key in keys)
+            foreach (var key in keys)
             {
                 var value = _memoryCache.Get<CacheValue>(key: key);
                 var img = "E:\\CloudProjects\\FirstProject\\FirstCloudProject\\FirstCloudProject\\wwwroot" + value.ImagePath;
