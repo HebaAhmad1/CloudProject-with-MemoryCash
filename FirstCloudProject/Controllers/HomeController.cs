@@ -69,7 +69,9 @@ namespace FirstCloudProject.Controllers
                         await model.ImageFile.CopyToAsync(stream);
                         stream.Close();
 
-                        //encrypt the image
+                    //encrypt the image
+                   
+                       
                         var img = "E:\\CloudProjects\\FirstProject\\FirstCloudProject\\FirstCloudProject\\wwwroot" + model.ImgURl;
                         byte[] imageArray = System.IO.File.ReadAllBytes(img);
                         String base64ImageRepresentation = Convert.ToBase64String(imageArray);

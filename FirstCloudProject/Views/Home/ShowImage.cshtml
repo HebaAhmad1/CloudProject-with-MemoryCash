@@ -18,7 +18,12 @@
 <div class="cont">
     <img id="img" />
 </div>
-
+<div id="show2" class="alert alert-warning alert-dismissible fade show" role="alert" style=" width: 468px; margin-top: -124px; position: absolute; margin-left: 604px; display: none">
+    <strong>Failed!</strong> This Key Not Found In Memory Cache And DB :)
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
 
 <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
 
@@ -37,12 +42,7 @@
                 debugger
                 if (result == null) {
                     $('#img').attr('src', "");
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Key not found',
-                        footer: 'No Image found'
-                    })
+                    $('#show2').css('display', 'block');
                 }
                 else
                     $('#img').attr('src', result.path);
