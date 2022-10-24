@@ -1,5 +1,7 @@
 using FirstCloudProject.Controllers;
+using FirstCloudProject.MemoryCacheClasses;
 using FirstCloudProject.Models;
+using FirstCloudProject.Services;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,9 +33,12 @@ namespace FirstCloudProject
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(
                    Configuration.GetConnectionString("DefaultConnection"), sqlServerOptions => sqlServerOptions.CommandTimeout(60)));
-            services.AddMemoryCache(); 
-
+            services.AddMemoryCache();
+            services.AddSingleton<MyMemoryCache>(); 
+            services.AddSingleton<MemoryCacheSettingVm>();
             services.AddControllersWithViews();
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddHangfireServer();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +60,8 @@ namespace FirstCloudProject
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseHangfireDashboard("/dashboard");
+            RecurringJob.AddOrUpdate<HangFireServices>(a => a.CreateBackground(), "*/5 * * * * *");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

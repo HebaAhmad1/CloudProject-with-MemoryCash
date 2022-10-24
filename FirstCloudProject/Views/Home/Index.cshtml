@@ -9,21 +9,21 @@
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script>
-    $(document).ready(function () {
-        sendRequest();
-        function sendRequest() {
-            $.ajax({
-                url: "/Home/SettingsOfMemoryCache",
-                success:
-                    function (data) {
+    //$(document).ready(function () {
+    //    sendRequest();
+    //    function sendRequest() {
+    //        $.ajax({
+    //            url: "/Home/SettingsOfMemoryCache",
+    //            success:
+    //                function (data) {
 
-                    },
-                complete: function () {
-                    // Schedule the next request when the current one's complete
-                    setInterval(sendRequest, 300000); // The interval set to 5 seconds
-                }
-            });
-        };
-    });
+    //                },
+    //            complete: function () {
+    //                // Schedule the next request when the current one's complete
+    //                setInterval(sendRequest, 120000); // The interval set to 5 seconds
+    //            }
+    //        });
+    //    };
+    //});
 
 </script>
